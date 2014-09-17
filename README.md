@@ -1,4 +1,4 @@
-== This is a site to resist the real estate bad guys in Brooklyn
+## This is a site to resist the real estate bad guys in Brooklyn
 
 Check back later so we can tell you what it actually is.
 
