@@ -54,7 +54,7 @@ var property =
         },
         
         zoning: { // ARR OF ZONING ID REFERENCES???
-            zoning: [], // Array(4) of Strs matching zoning code pattern
+            zonings: [], // Array(4) of Strs matching zoning code pattern
             overlay: [], // Array(2) of Strs mathcing overlay code pattern
             special_purpose_district: [], // Array(2) of Strs matching SPD code pattern
             limited_height_district: '', // Str matching code pattern

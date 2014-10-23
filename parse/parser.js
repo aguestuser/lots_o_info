@@ -31,18 +31,33 @@ module.exports = function(spec){
   }
   that.read_file = read_file
 
+  // var build_documents = function(callback){
+  //   // input: Parser object with matrix attribute initialized
+  //   // does: constructs doc attribute
+  //   // output: mutated Parser object
+
+  //   docs = []
+  //   _.each(that.matrix, function(row, i){
+  //     docs[i] = {} 
+  //     _.each(that.translations, function(keys, index){
+  //       _.extend(docs[i], cell_to_json( row[index], docs[i], keys ) )
+  //     })
+  //     // console.log('docs['+i+']: ', docs[i])
+  //   })
+
+  //   that['docs'] = docs
+  //   callback.apply(that)
+  // }
+  // that.build_documents = build_documents 
+
   var build_documents = function(callback){
     // input: Parser object with matrix attribute initialized
     // does: constructs doc attribute
     // output: mutated Parser object
 
     docs = []
-    _.each(that.matrix, function(row, i){
-      docs[i] = {} 
-      _.each(that.translations, function(keys, index){
-        _.extend(docs[i], cell_to_json( row[index], docs[i], keys ) )
-      })
-      // console.log('docs['+i+']: ', docs[i])
+    _.each(that.matrix, function(row){
+      docs.push(document_from(row)) 
     })
 
     that['docs'] = docs
@@ -61,6 +76,48 @@ module.exports = function(spec){
       return row.split(',') 
     })
   }
+
+  function document_from(row){
+    var doc = {}
+    _.each(that.translations, function(val, key){
+      doc[key] = nested_values_from(val, row)
+    })
+    return doc
+  }
+
+  function nested_values_from(val, row){
+    // input: Object Literal, String
+    // output: Nested JSON objects (or String if val is String)
+
+    if ( _.isArray(val) ){ // for array
+      return arr_from(val, row) // (will recurse)
+    } 
+    else { // for object
+      if (val.hasOwnProperty('index')){
+        return val.cast(row[val.index]) // break recursion
+      }
+      else {
+        return obj_from(val, row) // (will recurse)  
+      }
+    }
+  }
+
+  function arr_from(val, row){
+    var arr = []
+    _.each(val, function(elem){
+      arr.push( nested_values_from( elem, row ) ) // recurse
+    })
+    return arr
+  }
+
+  function obj_from(val, row){
+    var obj = {}
+    _.each(val, function(sub_val, key){
+      obj[key] = nested_values_from(sub_val, row) // recurse
+    })
+    return obj
+  }
+
 
   function cell_to_json(val, doc, keys, count, location){
     // input: Str (csv cell val), JSON Object, Arr of Strs (JSON obj keys), Num (index of keys Arr)
