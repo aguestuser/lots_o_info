@@ -70,7 +70,7 @@ module.exports = function(spec){
       // - once all keys added, stores cell data as value, returns JSON object
     // output: JSON Object
 
-    var count = count || 0,
+    var count = count || 0
       , location = location || doc
       , key = keys[count] || null
 

@@ -25,25 +25,37 @@ module.exports = {
     {
       borough: 'BK',
       lot: '2',
-      district: 
-      { community_board: '302',
-       school: '13',
-       council: '33',
-       fire: 'L118',
-       police: '84' },
-      location: { address: '        JOHN STREET' },
-      zoning: { zonings: { '1': '', '2': '', null: 'M3-1' } } },
-    borough: 'BK',
-    lot: '50',
-    district: 
-    { community_board: '302',
-     school: '13',
-     council: '33',
-     fire: 'L118',
-     police: '84' },
-    location: { address: '10 JAY STREET' },
-    zoning: { zonings: { '1': 'M3-1', '2': '', null: 'M1-4/R8A' 
-  } } } ]
+      district: { 
+        community_board: '302',
+        school: '13',
+        council: '33',
+        fire: 'L118',
+        police: '84' },
+      location: { 
+        address: '        JOHN STREET' 
+      },
+      zoning: { 
+        zonings: { '1': '', '2': '', null: 'M3-1' } 
+      } 
+    },
+    {
+      borough: 'BK',
+      lot: '50',
+      district: { 
+        community_board: '302',
+        school: '13',
+        council: '33',
+        fire: 'L118',
+        police: '84' 
+      },
+      location: { 
+        address: '10 JAY STREET' 
+      },
+      zoning: { 
+        zonings: { '1': 'M3-1', '2': '', null: 'M1-4/R8A' } 
+      } 
+    } 
+  ]
   // [
   //   {
   //     "borough": "BK",
