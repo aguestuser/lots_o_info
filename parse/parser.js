@@ -38,9 +38,9 @@ module.exports = function(spec){
 
     docs = []
     _.each(that.matrix, function(row, i){
-      docs[i] = {}
+      docs[i] = {} 
       _.each(that.translations, function(keys, index){
-        _.extend(docs[i], cell_to_json( row[index], docs[i], keys, 0 ) )
+        _.extend(docs[i], cell_to_json( row[index], docs[i], keys ) )
       })
       // console.log('docs['+i+']: ', docs[i])
     })
@@ -71,8 +71,8 @@ module.exports = function(spec){
     // output: JSON Object
 
     var count = count || 0,
-      location = location || doc,
-      key = keys[count] || null
+      , location = location || doc
+      , key = keys[count] || null
 
     if ( count === keys.length - 1 ){
       location[key] = val    
