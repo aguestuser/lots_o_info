@@ -1,20 +1,20 @@
-var fs = require('fs')
-  , _ = require('underscore')
-  , build_parser = require('parser')
+var parser = require('parser')
+  , model = require('../model')
+  , creds = require('../credentials')
+  , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053190.mongolab.com:53190/lots_o_info_staging"
+  , db = require('mongoskin').db(db_path)
 
-function main(){
-  
-  var parser = build_parser({ // build parser object
-        data_set: process.argv[2],
-        source: process.argv[3]
-      })
+(function main(){
 
-  parser.read_file(function(){ // call chained parsing methods on parser object
-    parser.build_documents(function(){
-      parser.persist_documents(function(){
-        console.log('COMPLETE!') // celebrate!
-      })
+  var data_set = process.argv[2]
+    , source_path = process.argv[3]
+    , translations = parser.translations(data_set)
+
+  parser.build_matrix(function(matrix){ 
+    docs = parser.build_docs(matrix, translations)
+    model.batch_save(db, docs, function(err, res){
+      console.log('Wrote' + res.length + 'documents to db.')
     })
   })
 
-}();//self-invoke main function
+})();//self-invoke main function

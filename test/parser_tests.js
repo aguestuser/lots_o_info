@@ -1,6 +1,9 @@
 var parser = require ('../parse/parser')
   , should = require('should')
-  , fs = require('fs')
+  , creds = require('../credentials')
+  , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053190.mongolab.com:53190/lots_o_info_staging"
+  , db = require('mongoskin').db(db_path)
+  , model = require('../model')
 
 describe('Parser', function(){
 
@@ -10,12 +13,12 @@ describe('Parser', function(){
       , expected = require('./support/parse_pluto_expected')
       , matrix, docs
 
-    // describe('construction', function(){
-      
-    //   it('retrieves correct translations object', function(){
-    //     parser.translations.should.eql( require('../parse/pluto_translations') )
-    //   })
-    // })
+    describe('#translations', function(){
+
+      it('retrieves correct translations object', function(){
+        parser.translations('pluto').should.eql( require('../parse/pluto_translations') )
+      })
+    })
 
     describe('#build_matrix', function(){
 
@@ -26,16 +29,9 @@ describe('Parser', function(){
         })
       })
 
-      it('correctly parses 2d matrix from csv', function(){
+      it('parses 2d matrix from csv', function(){
         // parser.matrix.should.eql( expected.matrix )
         matrix.should.eql( expected.matrix )
-      })
-
-      describe('#translations', function(){
-
-        it('retrieves correct translations object', function(){
-          parser.translations('pluto').should.eql( require('../parse/pluto_translations') )
-        })
       })
 
       describe('#build_documents', function(){
@@ -45,8 +41,22 @@ describe('Parser', function(){
           docs = parser.build_documents(matrix, translations)
         })
 
-        it('correctly maps cell values to json values', function(){
+        it('maps cell values to json values', function(){
           docs.should.eql(expected.docs)
+        })
+      
+        describe('writing to db', function(){
+          
+          beforeEach(function(done){
+            model.batch_save(db, docs, done)
+          })
+
+          it('writes json docs to mongo', function(){
+            db.collection('properties').count(function(err, count){
+              should.not.exist(err)
+              count.should.eq( docs.length )
+            })
+          })
         })
       })
     }) 
