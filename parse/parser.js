@@ -68,7 +68,12 @@ module.exports = (function(){
     else { // for object
       if (val.hasOwnProperty('index')){
         return val.cast(row[val.index]) // break recursion
-      }
+      } 
+      // else if (val is a string with 'reference:' in it) {
+      //   // parse what sort of reference it is (call it ref)
+      //   // insert the contained object into a collection of type 'ref'
+      //   // store the id of ref as a reference in this object
+      // }
       else {
         return get_obj(val, row) // (will recurse)  
       }

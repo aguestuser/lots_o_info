@@ -88,14 +88,41 @@ var property =
             election: '',
             historic: '' // Str or null
         },
-        
-        ownerships: [
-            {
-                type: '', // Str matching /^(C|M|O|P|X|\s)$/
-                owner: '' // Reference to Owner Id
-            }
-        ]
+        owner: REF_TO_OWNER
     }
+
+var owner_of_unknown_type:{
+    name: ,
+    deeds: [],
+    permits: []
+}
+
+owner.companies = function(){
+    owner.permits.map(function(permit){ permit. })
+    owner.articles_of_incorporation
+}
+
+var deed = {
+    property: ,
+    owner: REF_TO_OWNER_OF_UNKNOWN_TYPE, REF_TO_PERSON, REF_TO_COMPANY
+}
+
+var permit = {
+    business: ,
+    
+}
+
+var person = {
+    name: ,
+    phone: 
+}
+
+var company = {
+    name: ,
+    owner: REF_TO_PERSON | REF_TO_COMPANY,
+    address: 
+}
+
 
 //owner
 var owner = {
