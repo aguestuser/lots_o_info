@@ -90,11 +90,174 @@ var property =
         },
         owner: REF_TO_OWNER
     }
+    
+// DOB STUFF
 
-var owner_of_unknown_type:{
-    name: ,
-    deeds: [],
-    permits: []
+var property = {
+    
+}
+
+var job = {
+    number: 0,
+    doc_number: 0,
+    type: ''.
+    status: '',
+    latest_action_date: new Date(),
+    scope: {
+        plumbing: false,
+        ...$
+        other: false,
+        other_description: ''
+    }
+    date: {
+        pre_filing: ,
+        
+        paid: ,
+        fully_paid: ,
+        assigned: ,
+        approved: ,
+        fully_permitted: 
+    }
+    cost: 0,
+    total_fee: 0,
+    fee_status: '', //enum
+    changes ={
+        sq_feet: {
+            existing: 0,
+            proposed: 0
+        }
+        sq_feet: 0,
+        proposed_sq_feet: 0,
+        horiz_enlargement: false,
+        vert_enlargement: false,
+        //frontage
+        stories: {
+            existing: 0,
+            proposed: 0
+        }
+        height:{
+            existing: 0,
+            proposed: 0
+        }
+        units: {
+            existing: 0,
+            proposed: 0
+        },
+        occupancy: {
+            existing: '', //enum
+            proposed: ''
+        }
+        
+        
+        
+    }
+    
+        
+    property: {}, //Property
+    description: '...',
+    permits: [] // Arr of Permits
+}
+
+//OWNER FIELDS
+// owner_type: enum { 'CORPORATION', 'PARTNERSHIP', 'INDIVIDUAL', 'GOV', 'GOV - OTHER', 'OTHER' }
+// owner_name, owner_business
+
+// we know:
+// owner_business OWNS propertiy
+// owner_name has corporate_tie_of_unknown_type with owner_business
+
+// 
+
+// cleaning:
+// (1) dedupe people
+
+// what makes a person identical to another person?
+// (1) they have corporate ties to identical companies
+// (2) they have the same phone number
+// (3) they have the same uncommon name [what is uncommon?]
+
+
+// what makes a company identicial?
+// (1) they have identical names
+// (2) they have names that 
+
+var possible_property_ownership ={
+    //given by owner_name and owner_business fields in DOB
+    //goal: reduce these to ownerships of type 'corporate' or 'property'
+    property: '', // Property
+    owner: '', // Company
+}
+
+var property_ownership = {
+    owner: '', //Person, Company, PropertyOwnerOfUnknownType
+    owned: '', //Property
+    source: '', // enum { 'deed' }
+}
+
+var property_owner_of_unknown_type = {
+    name: '',
+    
+}
+
+var deed = {
+    
+}
+
+// CORPORATE TIES
+
+var corporate_tie_of_unknown_type = {
+    person: '', //Ref to Person
+    company: ''
+}
+
+var corporate_ownership = {
+    owner: , // Person or Company
+    owned: '', // Company
+    source_type: '', // { 'deed', 'permit', 'job', 'research' }
+    source: 'http://', // Ref to deed, permit OR Str (hyperlink)   
+}
+
+var employment = {
+    company: , 
+    person: 
+}
+
+var partnership = {
+    
+}
+
+var directorship = {
+    
+}
+
+var legal_representation = {
+
+}
+
+var financial = {
+    
+}
+
+// CORPORATE WEB
+
+var corporate_web: {
+    people: [],
+    companies: [],
+    properties: [],
+    ties: []
+}
+
+
+non_profit: false,
+
+
+var permit = {
+    
+}
+
+var owner_of_unknown_type = {
+    name: '',
+    deeds: []
 }
 
 owner.companies = function(){
