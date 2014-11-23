@@ -16,74 +16,117 @@ module.exports =
 //   14: [ 'zoning', 'zonings', 2 ],
 //   15: [ 'zoning', 'zonings', 2 ]
 // }
+
 {
-  borough: {
-    index: 0,
-    cast: cast('self')
-  },
-  block: {
-    index: 1,
-    cast: cast('self')
-  },
-  lot: {
-    index: 2,
-    cast: cast('self')
-  },
-  location:{
-    address: {
-      index: 11,
-      cast: cast('self')
+  base: {
+    collection: 'properties',
+    fields: {
+      borough: {
+        index: 0,
+        cast: cast('string')
+      },
+      block: {
+        index: 1,
+        cast: cast('string')
+      },
+      lot: {
+        index: 2,
+        cast: cast('string')
+      },
+      location:{
+        address: {
+          index: 11,
+          cast: cast('string')
+        }
+      },
+      district: {
+        community_board: {
+          index: 3,
+          cast: cast('string')
+        },
+        school: {
+          index: 6,
+          cast: cast('string')
+        },
+        council: {
+          index: 7,
+          cast: cast('string')
+        },
+        fire: {
+          index: 9,
+          cast: cast('string')
+        },
+        police: {
+          index: 10,
+          cast: cast('string')
+        },
+      },
+      zonings: [
+        {
+          index: 12,
+          cast: cast('string')
+        },
+        {
+          index: 13,
+          cast: cast('string')
+        },
+        {
+          index: 14,
+          cast: cast('string')
+        },
+        {
+          index: 15,
+          cast: cast('string')
+        },
+      ],
+      year_built:{
+        index: 57,
+        cast: cast('year')
+      } 
     }
-  },
-  district: {
-    community_board: {
-      index: 3,
-      cast: cast('self')
-    },
-    school: {
-      index: 6,
-      cast: cast('self')
-    },
-    council: {
-      index: 7,
-      cast: cast('self')
-    },
-    fire: {
-      index: 9,
-      cast: cast('self')
-    },
-    police: {
-      index: 10,
-      cast: cast('self')
-    },
-  },
-  zonings: [
+  },   
+  refs: [
     {
-      index: 12,
-      cast: cast('self')
-    },
-    {
-      index: 13,
-      cast: cast('self')
-    },
-    {
-      index: 14,
-      cast: cast('self')
-    },
-    {
-      index: 15,
-      cast: cast('self')
-    },
-  ],
-  year_built:{
-    index: 57,
-    cast: cast('year')
-  }
+      collection: 'property_owners_of_unknown_type',
+      fields: {
+        name: {
+          index: 28,
+          cast: cast('string')
+        },
+        ownership_type: {
+          index: 27,
+          cast: cast('string')
+        }
+      }      
+    }
+  ]
 }
+  
+
+// refs: 
+//     [
+//       {
+//         collection: 'ownerships_of_unknown_type',
+//         fields: [
+//           {
+//             field_name: 'name',
+//             val: null,
+//             index: 18,
+//             cast: cast('string')
+//           }
+//           {
+//             field_name: 'address'
+//           }
+//         ]
+//       }
+//     }  
+//   }
+// }
+
 
 function cast(to_type){
-  //input: Enum { 'self',  }
-  if (to_type === 'self'){
+  //input: Enum { 'string',  }
+  if (to_type === 'string'){
     return function(val){
       return val
     }

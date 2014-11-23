@@ -1,12 +1,9 @@
 var async = require('async')
 
 module.exports = {
-  batch_save: function(db, docs, done){
-
+  batch_insert: function(db, collection, docs, refs, done){
     async.parallelLimit(
-
       docs.map(function(doc, i){
-
         return function(doneThis){
           db.collection('properties').insert(doc, function(err, res){
             if (err){ 
@@ -17,9 +14,7 @@ module.exports = {
             doneThis(null, docs[i])
           })
         }
-
       }), 1000, done
-
     )
   }
 }

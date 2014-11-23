@@ -26,18 +26,78 @@ module.exports = (function(){
   }
   that.translations = translations
 
-  var build_documents = function(matrix, translations){
+  var build_base_docs = function(matrix, translations){
     // input: Arr of Arrs, JSON Obj
     // does: translates matrix to arr of json docs
     // output: Arr of JSON Objs
+    
+    var get_doc = function(row){ return to_doc(row, translations.base.fields) }
 
-    return matrix.map(function(row){
-      return to_doc(row, translations)
+    return { 
+      collection: 'properties',
+      docs: matrix.map(get_doc)
+    }
+  }
+  that.build_base_docs = build_base_docs
+
+  var build_ref_doc_collections = function(matrix, translations){
+    // input: [[Str]], Obj of type: 
+    //  { base: { collection: Str, fields: { <field_name>: { index: Num, cast: Function(Str) } } } }
+    // output: [JSON Obj]
+
+    return translations.refs.map(function(ref){
+
+      var get_doc = function(row){ return to_doc(row, ref.fields) }
+
+      return {
+        collection: ref.collection,
+        docs: matrix.map(get_doc)
+      }
     })
   }
-  that.build_documents = build_documents
+  that.build_ref_doc_collections = build_ref_doc_collections
+
+  var build_links = function(base_docs, ref_doc_collections, db){
+
+    new_ref_docs = idify_ref_docs(ref_docs, db)
+    //try _.tap here instead of creating intermediary new_ref_docs var to pass to link_base_docs
+    new_base_docs = link_base_docs(base_docs, new_ref_docs)
+
+    return new_base_docs.concat(new_ref_docs)
+  } 
+  that.build_links = build_links
 
   //PRIVATE METHODS
+
+  function link_ref_doc_collections(ref_doc_collections, db){
+    var do_link_ref_doc_collection = function(docs){ return link_ref_docs( docs, db) }
+    return ref_doc_collections.map(do_link_ref_docs)
+  }
+
+  function link_ref_doc_collection(collection, db){
+    var do_append_id = function(doc){ return append_id(doc, db.ObjectId) }
+    return { 
+      collection: collection.collection,
+      docs: collection.docs.map(do_append_id)
+    }
+  }
+
+  function link_base_docs(base_docs, ref_doc_collections){
+
+    return ref_doc_collections.map(function (collection){
+      { 
+        collection: collection.collection,
+        docs: collection.docs.map(function (ref_doc, i){
+          var idMaker = function(){ return ref_doc._id }
+          return append_id( base_docs[i], idMaker ) 
+        })
+      }
+    })
+  }
+
+  function append_id(doc, idMaker){
+    return _.extend(doc, { _id: idMaker() })
+  }
 
   function to_matrix(data){
     //input: Str (results of fs.ReadFile)
@@ -48,11 +108,11 @@ module.exports = (function(){
       })
   }
 
-  function to_doc(row, translations){
+  function to_doc(row, field_mappings){
     //input: Arr of Strs
     //output: Nested JSON object
     return _.object(
-      _.map(translations, function(val, key){
+      _.map(field_mappings, function(val, key){
         return [ key, get_nested_values(val, row) ]
       })
     ) 
@@ -69,11 +129,6 @@ module.exports = (function(){
       if (val.hasOwnProperty('index')){
         return val.cast(row[val.index]) // break recursion
       } 
-      // else if (val is a string with 'reference:' in it) {
-      //   // parse what sort of reference it is (call it ref)
-      //   // insert the contained object into a collection of type 'ref'
-      //   // store the id of ref as a reference in this object
-      // }
       else {
         return get_obj(val, row) // (will recurse)  
       }

@@ -3,7 +3,7 @@ var parser = require ('../parse/parser')
   , creds = require('../credentials')
   , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053190.mongolab.com:53190/lots_o_info_staging"
   , db = require('mongoskin').db(db_path)
-  , model = require('../model')
+  , dao = require('../dao')
 
 describe('Parser', function(){
 
@@ -11,7 +11,7 @@ describe('Parser', function(){
     var data_set = 'pluto'
       , source_path = './test/sample_data/pluto/BK.csv'
       , expected = require('./support/parse_pluto_expected')
-      , matrix, docs
+      , matrix, translations, base_docs, ref_docs, all_docs
 
     describe('#translations', function(){
 
@@ -34,27 +34,38 @@ describe('Parser', function(){
         matrix.should.eql( expected.matrix )
       })
 
-      describe('#build_documents', function(){
+      describe('#build_base_docs', function(){
       
         beforeEach(function(){
-          var translations = parser.translations('pluto')
-          docs = parser.build_documents(matrix, translations)
+          translations = parser.translations('pluto')
+          base_docs = parser.build_base_docs(matrix, translations)
         })
 
         it('maps cell values to json values', function(){
-          docs.should.eql(expected.docs)
+          base_docs.should.eql(expected.base_docs)
         })
-      
-        describe('writing to db', function(){
-          
-          beforeEach(function(done){
-            model.batch_save(db, docs, done)
+
+        describe('#build_ref_docs', function(){
+
+          beforeEach(function(){
+            ref_docs = parser.build_ref_docs(matrix, translations)                  
           })
 
-          it('writes json docs to mongo', function(){
-            db.collection('properties').count(function(err, count){
-              should.not.exist(err)
-              count.should.eq( docs.length )
+          it.only('appends refs to docs', function(){
+            ref_docs.should.eql(expected.ref_docs)
+          })
+
+          describe('writing to db', function(){
+            
+            beforeEach(function(done){
+              model.batch_save(db, docs, done)
+            })
+  
+            it('writes json docs to mongo', function(){
+              db.collection('properties').count(function(err, count){
+                should.not.exist(err)
+                count.should.eq( docs.length )
+              })
             })
           })
         })
