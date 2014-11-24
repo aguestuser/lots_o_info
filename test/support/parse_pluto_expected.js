@@ -79,117 +79,107 @@ module.exports = {
         }
       ]
     }
+  ],
+  linked_ref_docs: [
+    {
+      collection: "property_owners_of_unknown_type",
+      docs: [
+        {
+          
+          name: "BROOKLYN BRIDGE PARK",
+          ownership_type: "P",
+          _id: "<SOME_ID>"
+        },
+        {
+          
+          name: "NASTY GUY",
+          ownership_type: "P",
+          _id: "<SOME_ID>"
+        },
+        {
+          
+          name: "SAFDI PLAZA REALTY I",
+          ownership_type: "P",
+          _id: "<SOME_ID>"
+        }
+      ]
+    }
+  ],
+  linked_base_docs: [
+    {
+      "collection": "properties",
+      "docs": [
+        {
+          "borough": "BK",
+          "block": "1",
+          "lot": "1",
+          "location": {
+            "address": "1 JOHN STREET"
+          },
+          "district": {
+            "community_board": "302",
+            "school": "13",
+            "council": "33",
+            "fire": "L118",
+            "police": "84"
+          },
+          "zonings": [
+            "M3-1",
+            "M1-4/R8A",
+            "",
+            ""
+          ],
+          "year_built": "1900-01-01T05:00:00.000Z",
+          "property_owners_of_unknown_type": "<SOME_ID>"
+        },
+        {
+          "borough": "BK",
+          "block": "1",
+          "lot": "2",
+          "location": {
+            "address": "        JOHN STREET"
+          },
+          "district": {
+            "community_board": "302",
+            "school": "13",
+            "council": "33",
+            "fire": "L118",
+            "police": "84"
+          },
+          "zonings": [
+            "M3-1",
+            "",
+            "",
+            ""
+          ],
+          "year_built": "1900-01-01T05:00:00.000Z",
+          "property_owners_of_unknown_type": "<SOME_ID>"
+        },
+        {
+          "borough": "BK",
+          "block": "1",
+          "lot": "50",
+          "location": {
+            "address": "10 JAY STREET"
+          },
+          "district": {
+            "community_board": "302",
+            "school": "13",
+            "council": "33",
+            "fire": "L118",
+            "police": "84"
+          },
+          "zonings": [
+            "M1-4/R8A",
+            "M3-1",
+            "",
+            ""
+          ],
+          "year_built": "1920-01-01T05:00:00.000Z",
+          "property_owners_of_unknown_type": "<SOME_ID>"
+        }
+      ]
+    }
   ]
 }
-  // [  
-  //   {
-  //     borough: 'BK',
-  //     lot: '1',
-  //     district: { community_board: '302',
-  //       school: '13',
-  //       council: '33',
-  //       fire: 'L118',
-  //       police: '84' 
-  //     },
-  //     location: { 
-  //       address: '1 JOHN STREET' 
-  //     },
-  //     zoning: { 
-  //       zonings: { '1': 'M1-4/R8A', '2': '', null: 'M3-1' } 
-  //     } 
-  //   },
-  //   {
-  //     borough: 'BK',
-  //     lot: '2',
-  //     district: { 
-  //       community_board: '302',
-  //       school: '13',
-  //       council: '33',
-  //       fire: 'L118',
-  //       police: '84' },
-  //     location: { 
-  //       address: '        JOHN STREET' 
-  //     },
-  //     zoning: { 
-  //       zonings: { '1': '', '2': '', null: 'M3-1' } 
-  //     } 
-  //   },
-  //   {
-  //     borough: 'BK',
-  //     lot: '50',
-  //     district: { 
-  //       community_board: '302',
-  //       school: '13',
-  //       council: '33',
-  //       fire: 'L118',
-  //       police: '84' 
-  //     },
-  //     location: { 
-  //       address: '10 JAY STREET' 
-  //     },
-  //     zoning: { 
-  //       zonings: { '1': 'M3-1', '2': '', null: 'M1-4/R8A' } 
-  //     } 
-  //   } 
-  // ]
-  // [
-  //   {
-  //     "borough": "BK",
-  //     "district": {
-  //       "address": "1 JOHN STREET",
-  //       "community_board": "302",
-  //       "council": "33",
-  //       "fire": "L118",
-  //       "police": "84",
-  //       "school": "13"
-  //     },
-  //     "lot": "1",
-  //     "zoning": {
-  //       "zonings": {
-  //         "1": "M1-4/R8A",
-  //         "2": "",
-  //         "null": "M3-1"
-  //       }
-  //     }
-  //   },
-  //   {
-  //     "borough": "BK",
-  //     "district": {
-  //       "address": "        JOHN STREET",
-  //       "community_board": "302",
-  //       "council": "33",
-  //       "fire": "L118",
-  //       "police": "84",
-  //       "school": "13"
-  //     },
-  //     "lot": "2",
-  //     "zoning": {
-  //       "zonings": {
-  //         "1": "",
-  //         "2": "",
-  //         "null": "M3-1"
-  //       }
-  //     }
-  //   },
-  //   {
-  //     "borough": "BK",
-  //     "district": {
-  //       "address": "10 JAY STREET",
-  //       "community_board": "302",
-  //       "council": "33",
-  //       "fire": "L118",
-  //       "police": "84",
-  //       "school": "13"
-  //     },
-  //     "lot": "50",
-  //     "zoning": {
-  //       "zonings": {
-  //         "1": "M3-1",
-  //         "2": "",
-  //         "null": "M1-4/R8A"
-  //       }
-  //     }
-  //   }
-  // ]
-// }
 

@@ -5,6 +5,7 @@
 
 var fs = require('fs')
   _ = require('underscore')
+  mongo = require('mongoskin')
 
 module.exports = (function(){
 
@@ -26,7 +27,7 @@ module.exports = (function(){
   }
   that.translations = translations
 
-  var build_base_docs = function(matrix, translations){
+  var build_base_collection = function(matrix, translations){
     // input: Arr of Arrs, JSON Obj
     // does: translates matrix to arr of json docs
     // output: Arr of JSON Objs
@@ -38,9 +39,9 @@ module.exports = (function(){
       docs: matrix.map(get_doc)
     }
   }
-  that.build_base_docs = build_base_docs
+  that.build_base_collection = build_base_collection
 
-  var build_ref_doc_collections = function(matrix, translations){
+  var build_ref_collections = function(matrix, translations){
     // input: [[Str]], Obj of type: 
     //  { base: { collection: Str, fields: { <field_name>: { index: Num, cast: Function(Str) } } } }
     // output: [JSON Obj]
@@ -55,45 +56,38 @@ module.exports = (function(){
       }
     })
   }
-  that.build_ref_doc_collections = build_ref_doc_collections
+  that.build_ref_collections = build_ref_collections
 
-  var build_links = function(base_docs, ref_doc_collections, db){
-
-    new_ref_docs = idify_ref_docs(ref_docs, db)
-    //try _.tap here instead of creating intermediary new_ref_docs var to pass to link_base_docs
-    new_base_docs = link_base_docs(base_docs, new_ref_docs)
-
-    return new_base_docs.concat(new_ref_docs)
-  } 
-  that.build_links = build_links
-
-  //PRIVATE METHODS
-
-  function link_ref_doc_collections(ref_doc_collections, db){
-    var do_link_ref_doc_collection = function(docs){ return link_ref_docs( docs, db) }
-    return ref_doc_collections.map(do_link_ref_docs)
-  }
-
-  function link_ref_doc_collection(collection, db){
-    var do_append_id = function(doc){ return append_id(doc, db.ObjectId) }
-    return { 
-      collection: collection.collection,
-      docs: collection.docs.map(do_append_id)
-    }
-  }
-
-  function link_base_docs(base_docs, ref_doc_collections){
-
-    return ref_doc_collections.map(function (collection){
-      { 
+  function link_refs(ref_doc_collections){
+    var do_append_id = function(doc){ return append_id(doc, mongo.ObjectID) }
+    
+    return ref_doc_collections.map(function(collection){
+      return { 
         collection: collection.collection,
-        docs: collection.docs.map(function (ref_doc, i){
-          var idMaker = function(){ return ref_doc._id }
-          return append_id( base_docs[i], idMaker ) 
+        docs: collection.docs.map(do_append_id)
+      }
+    })
+  }
+  that.link_refs = link_refs
+
+  function link_base(base_collection, ref_collections){
+
+    return ref_collections.map(function (ref_collection){
+      return { 
+        collection: base_collection.collection,
+        docs: ref_collection.docs.map(function (ref_doc, i){ 
+          return _.extend(
+            base_collection.docs[i], 
+            _.object([[ ref_collection.collection,  ref_doc._id ]])
+          )
+          console.log('>>>OBJECT', _.object([[ ref_collection.collection,  ref_doc._id ]]))
         })
       }
     })
   }
+  that.link_base = link_base
+
+  //PRIVATE METHODS
 
   function append_id(doc, idMaker){
     return _.extend(doc, { _id: idMaker() })

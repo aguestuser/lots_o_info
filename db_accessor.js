@@ -5,7 +5,7 @@ module.exports = {
     async.parallelLimit(
       docs.map(function(doc, i){
         return function(doneThis){
-          db.collection('properties').insert(doc, function(err, res){
+          db.collection(collection).insert(doc, function(err, res){
             if (err){ 
               console.error(err) 
               process.exit
