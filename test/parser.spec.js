@@ -1,7 +1,7 @@
 var parser = require ('../parse/parser')
   , should = require('should')
   , creds = require('../credentials')
-  , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053190.mongolab.com:53190/lots_o_info_staging"
+  , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053140.mongolab.com:53140/lots_o_info_testing"
   , db = require('mongoskin').db(db_path)
   , db_accessor = require('../db_accessor')
 
@@ -12,7 +12,7 @@ describe('Parser', function(){
       , source_path = './test/sample_data/pluto/BK.csv'
       , expected = require('./support/parse_pluto_expected')
 
-    describe('#translations', function(){
+    describe('parser#translations', function(){
 
       var translations
 
@@ -21,7 +21,7 @@ describe('Parser', function(){
       })
     })
 
-    describe('#build_matrix', function(){
+    describe('parser#build_matrix', function(){
       
       var matrix
 
@@ -32,11 +32,11 @@ describe('Parser', function(){
         })
       })
 
-      it.only('parses 2d matrix from csv', function(){
+      it('parses 2d matrix from csv', function(){
         matrix.should.eql( expected.matrix )
       })
 
-      describe('#build_base_collection', function(){
+      describe('parser#build_base_collection', function(){
         
         var base_collection, translations
 
@@ -49,7 +49,7 @@ describe('Parser', function(){
           base_collection.should.eql(expected.base_collection)
         })
 
-        describe('#build_ref_collections', function(){
+        describe('parser#build_ref_collections', function(){
           
           var ref_collections
 
@@ -61,7 +61,7 @@ describe('Parser', function(){
             ref_collections.should.eql(expected.ref_collections)
           })
 
-          describe('#link_refs', function(){
+          describe('parser#link_refs', function(){
 
             var linked_ref_collections
 
@@ -69,22 +69,22 @@ describe('Parser', function(){
               linked_ref_collections = parser.link_refs(ref_collections)
             })
 
-            it.only('links base docs to ref docs, concatenates all doc collections into an array', function(){
+            it('creates unique ids for docs in ref collections', function(){
               replace_mongo_ids(linked_ref_collections, ref_replacer())
                 .should.eql(
                   JSON.stringify(expected.linked_ref_collections, null, 2)
                 )
             })
 
-            describe('#link_base', function(){
+            describe('parser#link_base', function(){
 
               var linked_base_collections
 
               beforeEach(function(){
-                linked_base_collections = parser.link_base(base_docs, linked_ref_collections)
+                linked_base_collections = parser.link_base(base_collection, linked_ref_collections)
               })
 
-              it('links base docs to ref docs, concatenates all doc collections into an array', function(){
+              it('links base docs to ref docs', function(){
                 replace_mongo_ids(linked_base_collections, base_replacer(linked_ref_collections))
                   .should.eql(
                     JSON.stringify(expected.linked_base_collections, null, 2)
@@ -93,19 +93,25 @@ describe('Parser', function(){
 
               // missing a test to make sure ids actually match !!!
           
-              describe('writing to db', function(){
-                var all_collections = linked_base_collections.concat(linked_ref_collections)
+              describe('db_accessor#batch_insert', function(){
+
+                var all_collections
 
                 beforeEach(function(done){
-                  all_collections.map(function(collection){
-                    db_accessor.batch_insert(db, collection, collection.docs, done)
-                  })
+                  all_collections = linked_base_collections.concat(linked_ref_collections)
+                  db_accessor.batch_insert(db, all_collections, done)
+                })
+
+                after(function(done){
+                  db.dropDatabase()
+                  done()
+                  // all_collections.map(function(collection){ db.collection(collection).drop() })
                 })
       
                 it('writes correct number of json docs to each mongo collection', function(){
 
                   all_collections.map(function(collection){
-                    db.collection(collection).count(function(err, count){
+                    db.collection(collection.collection).count(function(err, count){
                       should.not.exist(err)
                       count.should.eq( collection.docs.length )
                     })
