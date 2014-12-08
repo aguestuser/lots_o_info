@@ -84,7 +84,16 @@ module.exports =
         cast: cast('year')
       } 
     }
-  },   
+  },
+  // joins: [
+  //   { 
+  //     collection: 'property_ownerships',
+  //     fields: {
+  //       property: ,
+  //       owner: ,
+  //     }
+  //   }
+  // ]   
   refs: [
     {
       collection: 'property_owners_of_unknown_type',

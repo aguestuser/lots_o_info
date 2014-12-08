@@ -1,5 +1,6 @@
 var async = require('async')
-
+, _ = require('underscore');
+    
 module.exports = {
   batch_insert: function(db, collections, done){
     async.parallelLimit(
@@ -13,12 +14,12 @@ module.exports = {
                   process.exit
                 }
                 doneThis(null, doc)
-              })
-            }
-          })
+              });
+            };
+          });
         })
       ), 1000, done
-    )
+    );
   }
 }
 

@@ -1,16 +1,17 @@
 var parser = require ('../parse/parser')
-  , should = require('should')
-  , creds = require('../credentials')
-  , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053140.mongolab.com:53140/lots_o_info_testing"
-  , db = require('mongoskin').db(db_path)
-  , db_accessor = require('../db_accessor')
+, should = require('should')
+, creds = require('../credentials')
+, db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053140.mongolab.com:53140/lots_o_info_testing"
+, db = require('mongoskin').db(db_path)
+, db_accessor = require('../db_accessor')
+, _ = require('underscore');
 
 describe('Parser', function(){
 
   describe('Pluto', function(){
     var data_set = 'pluto'
-      , source_path = './test/sample_data/pluto/BK.csv'
-      , expected = require('./support/parse_pluto_expected')
+    , source_path = './test/sample_data/pluto/BK.csv'
+    , expected = require('./support/parse_pluto_expected');
 
     describe('parser#translations', function(){
 
@@ -18,23 +19,22 @@ describe('Parser', function(){
 
       it('retrieves correct translations object', function(){
         parser.translations('pluto').should.eql( require('../parse/pluto_translations') )
-      })
-    })
+      });
+    });
 
     describe('parser#build_matrix', function(){
       
       var matrix
-
       beforeEach(function(done){
         parser.build_matrix(source_path, function(res){
-          matrix = res
-          done()
-        })
-      })
+          matrix = res;
+          done();
+        });
+      });
 
       it('parses 2d matrix from csv', function(){
         matrix.should.eql( expected.matrix )
-      })
+      });
 
       describe('parser#build_base_collection', function(){
         

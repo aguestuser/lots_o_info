@@ -89,6 +89,11 @@ var property =
             historic: '' // Str or null
         },
         owner: REF_TO_OWNER
+        ownership: {
+            _id: ObjectId(),
+            property: ObjectID(), // this property
+            owner: ObjectID() // owner_of_unknown_type
+        }
     }
     
 // DOB STUFF
@@ -126,11 +131,8 @@ var job = {
             existing: 0,
             proposed: 0
         }
-        sq_feet: 0,
-        proposed_sq_feet: 0,
         horiz_enlargement: false,
         vert_enlargement: false,
-        //frontage
         stories: {
             existing: 0,
             proposed: 0
@@ -205,6 +207,7 @@ var deed = {
 
 // CORPORATE TIES
 
+//************************************//
 var corporate_tie_of_unknown_type = {
     person: '', //Ref to Person
     company: ''
