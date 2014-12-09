@@ -14,16 +14,27 @@ var parser = require('parser')
 ;(function main(){
 
   var data_set = process.argv[2]
-    , source_path = process.argv[3]
-    , translations = parser.translations(data_set)
+  , source_path = process.argv[3]
+  , p = parser.construct({
+    data_set: data_set,
+    source_path: source_path
+  });
 
-  parser.build_matrix(source_path, function(matrix){ 
+  parser.build_matrix(function(p){
+
+    var collections = parser.build_collections(p);
     
-    var ref_collections = parser.build_ref_collections(matrix, translations)
-      , base_collection = parser.build_base_collection(matrix, translations)
-      , all_collections = parser.link_refs(ref_collections).concat(parser.link_base(base_collection, ref_collections))
+    var collections = parser.link_refs(
+      parser.build_base_collections(
+        parser.build_ref_collections(p)
+      )
+    ).all_collections();
     
-    all_collections.map(function(collection){
+    // var ref_collections = parser.build_ref_collections(matrix, translations)
+    //   , base_collection = parser.build_base_collection(matrix, translations)
+    //   , all_collections = parser.link_refs(ref_collections).concat(parser.link_base(base_collection, ref_collections))
+    
+    collections.map(function(collection){
       db_accessor.batch_insert(db, collection.collection, collection.docs, function(err, res){
         console.log('Wrote' + res.length + 'documents to db.')
       }, {})  

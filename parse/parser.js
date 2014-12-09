@@ -3,151 +3,181 @@
 // accessed: 10/19/14
 // current as of: May 2014
 
-var fs = require('fs'),
-    _ = require('underscore'),
-    mongo = require('mongoskin');
+var fs = require('fs')
+, _ = require('underscore')
+, mongo = require('mongoskin')
+, parser;
 
-module.exports = (function(){
 
-  var that = {};
+// EXPORTS
 
-  //PUBLIC METHODS
-  var build_matrix = function(source_path, callback){
-    // input: Str(filepath), Function(Arr of Arrs) [CPS]
-    // does: parses csv data to 2d matrix, adds matrix attribute to parser object
+module.exports = parser = {
 
-    fs.readFile(source_path, 'utf8', function(err, data){
-      callback( to_matrix( data ) );
+  construct: function(spec){
+    //input: { source_path : Str, data_set : Str }
+    //output: Parser ADT
+    spec.translations = require('./' + spec.data_set + '_translations');
+    return spec;
+  },
+
+  build_matrix: function(p, callback){
+    // input: p : Parser ADT, callback : Function(Parser ADT) [CPS]
+    // does: parses csv data to 2d matrix, adds matrix attribute to parser ADT, passes ADT to callback
+    fs.readFile(p.source_path, 'utf8', function(err, data){
+      callback( _.extend( p, { matrix: to_matrix(data) } ) );
     });
-  };
-  that.build_matrix = build_matrix;
+  },
 
-  var translations = function(data_set){
-    return require('./' + data_set + '_translations');
-  };
-  that.translations = translations;
+  collections: function(p){
+    return p.collections ||
+      this.build_collections(p, {}, this.collection_builders()).collections;
+  },
 
-  var build_base_collection = function(matrix, translations){
-    // input: Arr of Arrs, JSON Obj
-    // does: translates matrix to arr of json docs
-    // output: Arr of JSON Objs
-    
-    var get_doc = function(row){ return to_doc(row, translations.base.fields) };
-
-    return { 
-      collection: 'properties',
-      docs: matrix.map(get_doc)
-    };
-  };
-  that.build_base_collection = build_base_collection;
-
-  var build_ref_collections = function(matrix, translations){
-    // input: [[Str]], Obj of type: 
-    //  { base: { collection: Str, fields: { <field_name>: { index: Num, cast: Function(Str) } } } }
-    // output: [JSON Obj]
-
-    return translations.refs.map(function(ref){
-
-      var get_doc = function(row){ return to_doc(row, ref.fields) };
-
-      return {
-        collection: ref.collection,
-        docs: matrix.map(get_doc)
-      };
-    });
-  };
-  that.build_ref_collections = build_ref_collections;
-
-  function link_refs(ref_doc_collections){
-    var do_append_id = function(doc){ return append_id(doc, mongo.ObjectID) };
-    
-    return ref_doc_collections.map(function(collection){
-      return { 
-        collection: collection.collection,
-        docs: collection.docs.map(do_append_id)
-      };
-    });
-  }
-  that.link_refs = link_refs;
-
-  function link_base(base_collection, ref_collections){
-
-    return ref_collections.map(function (ref_collection){
-      return { 
-        collection: base_collection.collection,
-        docs: ref_collection.docs.map(function (ref_doc, i){ 
-          return _.extend(
-            base_collection.docs[i], 
-            _.object([[ ref_collection.collection,  ref_doc._id ]])
-          );
-          // console.log('>>>OBJECT', _.object([[ ref_collection.collection,  ref_doc._id ]]))
-        })
-      };
-    });
-  }
-  that.link_base = link_base;
-
-  //PRIVATE METHODS
-
-  function append_id(doc, idMaker){
-    return _.extend(doc, { _id: idMaker() });
-  }
-
-  function to_matrix(data){
-    //input: Str (results of fs.ReadFile)
-    //output: Arr of Arr of Strs (each Str is a csv cell value)
-    return _.rest(data.split('\r'))
-      .map(function(row){
-        return row.split(',');
-      });
-  }
-
-  function to_doc(row, field_mappings){
-    //input: Arr of Strs
-    //output: Nested JSON object
-    return _.object(
-      _.map(field_mappings, function(val, key){
-        return [ key, get_nested_values(val, row) ];
-      })
-    );
-  }
-
-  function get_nested_values(val, row){
-    // input: Object Literal, String
-    // output: Nested JSON objects (or String if val is String)
-
-    if ( _.isArray(val) ){ // for array
-      return get_arr(val, row) // (will recurse)
-    } 
-    else { // for object
-      if (val.hasOwnProperty('index')){
-        return val.cast(row[val.index]) // break recursion
-      } 
-      else {
-        return get_obj(val, row) // (will recurse)  
-      }
+  collection_builders: function(){
+   return [
+     link_collections,
+     build_base_collection,
+     build_ref_collections 
+    ];
+  },
+  
+  build_collections: function(p, builders){
+    // console.log('running');
+    // console.log(builders);    
+    if (builders.length === 1){
+      return _.first(builders)(p); // base case
+    } else {
+      return _.first(builders)(this.build_collections(p, _.rest(builders))); // recur
     }
   }
+};
 
-  function get_arr(val, row){
-    return _.map(val, function(elem){
-      return get_nested_values( elem, row )  // recurse
+//PRIVATE
+
+// CSV-TO-MATRIX FUNCTIONS
+
+var to_matrix = function(data){
+  //input: Str (results of fs.ReadFile)
+  //output: Arr of Arr of Strs (each Str is a csv cell value)
+  return _.rest(data.split('\r'))
+    .map(function(row){
+      return row.split(',');
     });
-  }
+}
 
-  function get_obj(val, row){
-    return _.object(
-      _.map(val, function(sub_val, key){
-        return [ key, get_nested_values(sub_val, row) ];
+// MATRIX-TO-COLLECTIONS FUNCTIONS
+
+
+var build_base_collection = function(p){
+  // input: Parser ADT
+  // does: translates matrix to arr of json docs, appends them to Parser ADT
+  // output: Arr of JSON Objs
+  
+  var get_doc = function(row){ return to_doc(row, p.translations.base.fields); };
+  
+  return _.extend(p, {
+    base: {
+      collection: 'properties',
+      docs: p.matrix.map(get_doc)//if i did currying, could i just add (p.translations... here?x)      
+    }
+  });  
+};
+
+var build_ref_collections = function (p){
+  // input: Parser ADT
+  // does:
+  //   * translates matrix fields into array of Collections of form:
+  //     {collection: Str, docs: [JSON] }
+  //   * appends them to Parser ADT
+  // output: new Parser ADT
+
+  return _.extend(p, {
+    refs: p.translations.refs.map(function(ref){
+      var get_doc = function(row){ return to_doc(row, ref.fields); };
+      return {
+        collection: ref.collection,
+        docs: p.matrix.map(get_doc)
+      };
+    })
+  });
+};
+
+var link_collections = function (p){
+  // input: Parser ADT
+  // output: [Collection ADT]
+  return _.extend(p, {
+    collections: link_refs(p.refs).concat(link_base(p.base, p.refs))
+  });
+};
+
+
+// TRANSLATION TRAVERSAL FUNCTIONS
+
+var to_doc = function(row, field_mappings){
+  //input: Arr of Strs
+  //output: Nested JSON object
+  return _.object(
+    _.map(field_mappings, function(val, key){
+      return [ key, get_nested_values(val, row) ];
+    })
+  );
+}
+
+var get_nested_values = function(val, row){
+  // input: Object Literal, String
+  // output: Nested JSON objects (or String if val is String)
+
+  if ( _.isArray(val) ){ // for array
+    return get_arr(val, row) // (will recurse)
+  } 
+  else { // for object
+    if (val.hasOwnProperty('index')){
+      return val.cast(row[val.index]) // break recursion
+    } 
+    else {
+      return get_obj(val, row) // (will recurse)  
+    }
+  }
+}
+
+var get_arr = function(val, row){
+  return _.map(val, function(elem){
+    return get_nested_values( elem, row )  // recurse
+  });
+}
+
+var get_obj = function(val, row){
+  return _.object(
+    _.map(val, function(sub_val, key){
+      return [ key, get_nested_values(sub_val, row) ];
+    })
+  );
+}
+
+// COLLECTION LINKING FUNCTIONS
+
+
+var link_refs = function (ref_doc_collections){
+  return ref_doc_collections.map(function(collection){
+    return { 
+      collection: collection.collection,
+      docs: collection.docs.map(function(doc){
+        return _.extend (doc, { _id: mongo.ObjectID() });
       })
-    );
-  }
+    };
+  });
+};
 
-  return that;
-})();
-
-
-
-
-
-
+var link_base = function(base_collection, ref_collections){
+  return ref_collections.map(function (ref_collection){
+    return { 
+      collection: base_collection.collection,
+      docs: ref_collection.docs.map(function (ref_doc, i){ 
+        return _.extend(
+          base_collection.docs[i], 
+          _.object([[ ref_collection.collection,  ref_doc._id ]])
+        );
+      })
+    };
+  });
+};
