@@ -37,7 +37,10 @@ describe('Importing', function(){
 
       describe('parser#build_collections', function(){
 
-        beforeEach(function(){ p = parser.build_collections(p, parser.collection_builders()); });
+        beforeEach(function(){
+          p = parser.build_collections(p);
+          debugger;
+        });
         
         it('builds and links collections', function(){
           replace_mongo_ids(p.collections).should.eql(pp(expected.linked_collections));  

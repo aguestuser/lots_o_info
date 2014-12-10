@@ -17,6 +17,11 @@ module.exports = parser = {
     //input: { source_path : Str, data_set : Str }
     //output: Parser ADT
     spec.translations = require('./' + spec.data_set + '_translations');
+    spec.coll_builders = [
+      build_ref_collections,     
+      build_base_collection,
+      link_collections
+    ];
     return spec;
   },
 
@@ -29,8 +34,7 @@ module.exports = parser = {
   },
 
   collections: function(p){
-    return p.collections ||
-      this.build_collections(p, {}, this.collection_builders()).collections;
+    return p.collections;
   },
 
   collection_builders: function(){
@@ -41,14 +45,23 @@ module.exports = parser = {
     ];
   },
   
-  build_collections: function(p, builders){
-    // console.log('running');
-    // console.log(builders);    
-    if (builders.length === 1){
-      return _.first(builders)(p); // base case
-    } else {
-      return _.first(builders)(this.build_collections(p, _.rest(builders))); // recur
-    }
+  // build_collections: function(p, builders){
+  //   // console.log('running');
+  //   // console.log(builders);    
+  //   if (builders.length === 0){
+  //     return p; // base case
+  //   } else {
+  //     return _.first(builders)(this.build_collections(p, _.rest(builders))); // recur
+  //   }
+  // }
+
+  build_collections: function(p){
+    return _.extend(p, {
+      collections: p.coll_builders.reduce(function(c, builder){
+        debugger;
+        return builder(p, c);
+      }, {})
+    });
   }
 };
 
@@ -65,17 +78,17 @@ var to_matrix = function(data){
     });
 }
 
-// MATRIX-TO-COLLECTIONS FUNCTIONS
+// COLLECTION BUILDERS
 
 
-var build_base_collection = function(p){
+
+var build_base_collection = function(p, c){
   // input: Parser ADT
-  // does: translates matrix to arr of json docs, appends them to Parser ADT
-  // output: Arr of JSON Objs
+  // does: translates matrix to arr of json docs, appends them to Collections Obj
+  // output: Collections obj of form: { base: Collection ADT }
   
   var get_doc = function(row){ return to_doc(row, p.translations.base.fields); };
-  
-  return _.extend(p, {
+  return _.extend(c, {
     base: {
       collection: 'properties',
       docs: p.matrix.map(get_doc)//if i did currying, could i just add (p.translations... here?x)      
@@ -83,15 +96,11 @@ var build_base_collection = function(p){
   });  
 };
 
-var build_ref_collections = function (p){
-  // input: Parser ADT
-  // does:
-  //   * translates matrix fields into array of Collections of form:
-  //     {collection: Str, docs: [JSON] }
-  //   * appends them to Parser ADT
-  // output: new Parser ADT
-
-  return _.extend(p, {
+var build_ref_collections = function (p, c){
+  // input: Parser ADT, Collections obj of form: { base: Collection ADT }
+  // does: translates matrix fields into array of JSON docs, appends them to Collections
+  // output: Collections obj of form: { base: Collection ADT, refs: [Collection ADT] }
+  return _.extend(c, {
     refs: p.translations.refs.map(function(ref){
       var get_doc = function(row){ return to_doc(row, ref.fields); };
       return {
@@ -102,12 +111,21 @@ var build_ref_collections = function (p){
   });
 };
 
-var link_collections = function (p){
-  // input: Parser ADT
+var build_join_collections = function(p, c){
+  /*
+   loop through c.base and c.refs
+   (c.base will need independently generated ids)
+   for every k/v pair in p.translations.joins[i].joins
+   create new doc in collection p.translations.joins[i].collection
+   */
+};
+
+var link_collections = function (p, c){
+  // input: Parser ADT, Collections Obj
+  // does: strips wrapper keys from Collection ADTS & concatenates them
   // output: [Collection ADT]
-  return _.extend(p, {
-    collections: link_refs(p.refs).concat(link_base(p.base, p.refs))
-  });
+
+  return link_refs(c.refs).concat(link_base(c.base, c.refs));
 };
 
 

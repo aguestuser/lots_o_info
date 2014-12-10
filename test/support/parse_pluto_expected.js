@@ -61,6 +61,17 @@ module.exports = {
       }       
     ] 
   },
+  join_collections: [
+    {
+      collection: 'ownerships',
+      docs: [
+        { type: 'property',
+          owner: '<SOME_ID>',
+          owned: '<SOME_ID>'
+        }
+      ]
+    }
+  ],
   ref_collections: [
     {
       collection: 'property_owners_of_unknown_type',

@@ -84,16 +84,7 @@ module.exports =
         cast: cast('year')
       } 
     }
-  },
-  // joins: [
-  //   { 
-  //     collection: 'property_ownerships',
-  //     fields: {
-  //       property: ,
-  //       owner: ,
-  //     }
-  //   }
-  // ]   
+  }, 
   refs: [
     {
       collection: 'property_owners_of_unknown_type',
@@ -107,6 +98,26 @@ module.exports =
           cast: cast('string')
         }
       }      
+    }
+  ],
+  joins: [
+    {
+      collection: 'ownerships',
+      fields: {
+        type: 'property',
+        from_matrix: {
+          index: 0,
+          cast: cast('string')
+        }
+      },
+      ref_fields: {
+        owner: {
+          collection: 'property_owners_of_unknown_type'
+        },
+        owned: {
+          collection: 'properties'
+        }
+      }
     }
   ]
 }

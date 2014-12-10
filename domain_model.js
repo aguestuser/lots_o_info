@@ -214,15 +214,15 @@ var corporate_tie_of_unknown_type = {
 }
 
 var corporate_ownership = {
-    owner: , // Person or Company
+    owner: '', // Person or Company
     owned: '', // Company
     source_type: '', // { 'deed', 'permit', 'job', 'research' }
     source: 'http://', // Ref to deed, permit OR Str (hyperlink)   
 }
 
 var employment = {
-    company: , 
-    person: 
+    company: '' , 
+    person: ''
 }
 
 var partnership = {
