@@ -12,7 +12,7 @@ describe('Importing', function(){
     var expected = require('./support/parse_pluto_expected')
     , p = parser.construct({
       data_set: 'pluto',
-      source_path: './test/sample_data/pluto/BK.csv'
+      test: true
     });
 
     describe('parser#construct', function(){
@@ -43,7 +43,8 @@ describe('Importing', function(){
         });
         
         it('builds and links collections', function(){
-          replace_mongo_ids(p.collections).should.eql(pp(expected.linked_collections));  
+          should.warn = false;
+          p.collections.should.eql(expected.collections);  
         });
 
         describe('db_accessor#batch_insert', function(){
@@ -62,37 +63,8 @@ describe('Importing', function(){
             p.collections.map(function(collection){
               db.collection(collection.collection).count(function(err, count){
                 should.not.exist(err);
-                count.should.eql( collection.docs.length );
+                count.should.eql(collection.docs.length);
               });
-            });
-          });
-        });
-      });
-
-      describe.skip('parser#build_collections [unpacked]', function(){
-        describe('parser#build_base_collection [unpacked]', function(){
-
-          beforeEach(function(){ p = parser.build_base_collection(p); });
-
-          it('builds Collection ADT for base docs', function(){
-            p.base_collection.should.eql(expected.base_collection);
-          });
-
-          describe('parser#build_ref_collections', function(){
-
-            beforeEach(function(){ p = parser.build_ref_collections(p); });
-
-            it('builds array of Collection ADTs for ref docs', function(){
-              p.ref_collections.should.eql(expected.ref_collections);
-            });
-
-            describe('parser#link_collections', function(){
-
-              beforeEach(function(){ p = parser.link_collections(p); });
-
-              it('links collections', function(){
-                replace_mongo_ids(p.collections).should.eql(expected.linked_collections);
-              }); 
             });
           });
         });
@@ -121,6 +93,6 @@ var id_replacer = function (collections){
 }
 
 var pp = function(obj){
-  return JSON.stringify(obj, null, 2);
+  return console.log(JSON.stringify(obj, null, 2));
 };
 

@@ -7,13 +7,17 @@ module.exports =
           index: 0,
           cast: cast('string')
         },
+        boro_code: {
+          index: 67,
+          cast: cast('number')
+        },
         block: {
           index: 1,
-          cast: cast('string')
+          cast: cast('number')
         },
         lot: {
           index: 2,
-          cast: cast('string')
+          cast: cast('number')
         },
         location:{
           address: {
@@ -24,15 +28,15 @@ module.exports =
         district: {
           community_board: {
             index: 3,
-            cast: cast('string')
+            cast: cast('number')
           },
           school: {
             index: 6,
-            cast: cast('string')
+            cast: cast('number')
           },
           council: {
             index: 7,
-            cast: cast('string')
+            cast: cast('number')
           },
           fire: {
             index: 9,
@@ -40,8 +44,8 @@ module.exports =
           },
           police: {
             index: 10,
-            cast: cast('string')
-          },
+            cast: cast('number')
+          }
         },
         zonings: [
           {
@@ -59,7 +63,7 @@ module.exports =
           {
             index: 15,
             cast: cast('string')
-          },
+          }
         ],
         year_built:{
           index: 57,
@@ -68,8 +72,9 @@ module.exports =
       }
     }, 
     {
-      collection: 'property_owners_of_unknown_type',
+      collection: 'property_owners',
       fields: {
+        type: 'unknown',
         name: {
           index: 28,
           cast: cast('string')
@@ -80,12 +85,12 @@ module.exports =
       collection: 'ownerships',
       fields: {
         type: 'property',
-        pluto_own_type: {
+        pluto_own_class: {
           index: 27,
           cast: cast('string')
         },
         owner: {
-          ref_to: 'property_owners_of_unknown_type'
+          ref_to: 'property_owners'
         },
         owned: {
           ref_to: 'properties'
@@ -222,17 +227,22 @@ function cast(to_type){
   //input: Enum { 'string',  }
   if (to_type === 'string'){
     return function(val){
-      return val
-    }
+      return val;
+    };
   } 
   else if (to_type === 'number'){
     return function(val){
-      return Number(val)
-    }
+      return Number(val);
+    };
   }
   else if (to_type === 'year'){
     return function(val){
-      return new Date(val,0,1,0)
-    }
+      return new Date(val,0,1,0);
+    };
+  }
+  else if(to_type === 'boro_to_num'){
+    return function(val){
+      return [].indexOf(val)
+    };
   }
 }
