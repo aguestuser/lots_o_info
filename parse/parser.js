@@ -33,35 +33,25 @@ module.exports = parser = {
     });
   },
 
-  collections: function(p){
-    return p.collections;
-  },
-
-  collection_builders: function(){
-   return [
-     link_collections,
-     build_base_collection,
-     build_ref_collections 
-    ];
-  },
-  
-  // build_collections: function(p, builders){
-  //   // console.log('running');
-  //   // console.log(builders);    
-  //   if (builders.length === 0){
-  //     return p; // base case
-  //   } else {
-  //     return _.first(builders)(this.build_collections(p, _.rest(builders))); // recur
-  //   }
-  // }
-
   build_collections: function(p){
+    //input: {Parser} : { ... matrix: [[]] }
+    //output: {Parser} : { ... matrix: [[]], collections: [{JSON}]  }
     return _.extend(p, {
-      collections: p.coll_builders.reduce(function(c, builder){
-        debugger;
-        return builder(p, c);
-      }, {})
+      collections: add_refs(p.translations.map(function(c){
+        return {
+          collection: c.collection,
+          docs: p.matrix.map(function(row, i){
+            return id_ify(to_doc(row, c.fields), p, i);
+          })
+        };
+      }))
     });
+  },
+
+  link_collections: function(p){
+    //input: {Parser} : { ... collections: [{ collection: Str, docs: [JSON] }]}
+    //output: [{Collection}]
+    return _.compose(id_ify, add_refs)(p);
   }
 };
 
@@ -112,12 +102,24 @@ var build_ref_collections = function (p, c){
 };
 
 var build_join_collections = function(p, c){
+  //input: {Parser} -> {Collections} : { base: {Collection}, refs: [{Collection}] }
   /*
    loop through c.base and c.refs
    (c.base will need independently generated ids)
    for every k/v pair in p.translations.joins[i].joins
    create new doc in collection p.translations.joins[i].collection
    */
+  //output: {Collections} : {base: {Collection}, refs: [{Collection}], joins: [{Collection}] }
+
+  return _.extend(c, {
+    joins: p.translations.joins.map(function(join){
+      var get_doc = function(row){ return to_doc(row, join.fields); };
+      return {
+        collection: join.collection,
+        docs: p.matrix.map(to_doc)
+      };
+    })
+  });
 };
 
 var link_collections = function (p, c){
@@ -125,7 +127,12 @@ var link_collections = function (p, c){
   // does: strips wrapper keys from Collection ADTS & concatenates them
   // output: [Collection ADT]
 
-  return link_refs(c.refs).concat(link_base(c.base, c.refs));
+  // return link_refs(c.refs).concat(link_base(c.base, c.refs));
+  return join.apply(
+    null,
+    [[c.base], c.refs].map(function(c_arr, p){
+      id_ify(c_arr, p);
+  }));
 };
 
 
@@ -145,15 +152,18 @@ var get_nested_values = function(val, row){
   // input: Object Literal, String
   // output: Nested JSON objects (or String if val is String)
 
-  if ( _.isArray(val) ){ // for array
-    return get_arr(val, row) // (will recurse)
-  } 
-  else { // for object
-    if (val.hasOwnProperty('index')){
-      return val.cast(row[val.index]) // break recursion
+  if ( _.isArray(val) ){              // for array
+    return get_arr(val, row)          // recur
+  }
+  else if (_.isString(val)){          // for str
+    return val;                       // return
+  }
+  else {                              // for object
+    if (val.hasOwnProperty('index')){ // for matrix mapping
+      return val.cast(row[val.index]) // return
     } 
-    else {
-      return get_obj(val, row) // (will recurse)  
+    else {                            // for generic object
+      return get_obj(val, row)        // recur
     }
   }
 }
@@ -174,6 +184,45 @@ var get_obj = function(val, row){
 
 // COLLECTION LINKING FUNCTIONS
 
+// var id_ify = function(p){
+//   // appends ids to every doc in p.collections
+//   return p.collections.map(function(c){
+//     return {
+//       collection: c.collection,
+//       docs: c.docs.map(function(doc, i){
+//         var id = p.test ? p.ids[i] : mongo.ObjectID();
+//         return _.extend(doc, { _id: id } );
+//       })
+//     };
+//   });
+// };
+
+var id_ify = function(doc, p, i){
+  var id = p.test && p.ids ? p.ids[i] : mongo.ObjectId(); 
+  return _.extend(doc, { _id: id });
+};
+
+var add_refs = function(colls){
+  //input: [{Collection : { ... _: { ref_to: Str }} }]
+  //output: [{Collection : { ... _: { ref_to: Num }} }]
+  return colls.map(function(coll){
+    return coll.docs.map(function(doc, colls, i){
+      _.compose(JSON.stringify, JSON.parse)(doc, ref_replacer(doc, colls, i));
+    });
+  });
+};
+
+var ref_replacer = function(doc, colls, i){
+  var col_names = _.pluck(colls, 'collection');
+  return function(k,v){
+    var coll = _.find(colls, function(coll){ return coll.collection === k; });
+    if (coll){ return coll.docs[i]._id; }
+    return v;
+  };
+};
+
+
+// var join_colls = function()
 
 var link_refs = function (ref_doc_collections){
   return ref_doc_collections.map(function(collection){
