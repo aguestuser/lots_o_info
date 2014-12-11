@@ -24,8 +24,8 @@ module.exports = parser = {
   },
 
   build_matrix: function(p, callback){
-    // input: p : {Parser}, callback : Function({Parser}) [CPS]
-    // does: parses csv data to 2d matrix, adds matrix attribute to parser ADT, passes ADT to callback
+    // input: p : {Parser}, callback : Function({Parser} : { ... matrix: [[]] }) [CPS]
+    // does: parses csv to 2d matrix, appends matrix to parser ADT, passes ADT to callback
     debugger;
     fs.readFile(p.source_path, 'utf8', function(err, data){
       debugger;
@@ -39,7 +39,6 @@ module.exports = parser = {
     //output: {Parser} : { ... matrix: [[]], collections: [{JSON}]  }
     return _.extend(p, {
       collections: add_refs(p.translations.map(function(c){
-      //collections: p.translations.map(function(c){
         return {
           collection: c.collection,
           docs: p.matrix.map(function(row, i){

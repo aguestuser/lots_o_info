@@ -13,31 +13,16 @@ var parser = require('parser')
 
 ;(function main(){
 
-  var data_set = process.argv[2]
-  , source_path = process.argv[3]
-  , p = parser.construct({
-    data_set: data_set,
-    source_path: source_path
+  var p = parser.construct({
+    data_set: process.argv[2]
   });
 
   parser.build_matrix(function(p){
-
-    var collections = parser.build_collections(p);
-    
-    var collections = parser.link_refs(
-      parser.build_base_collections(
-        parser.build_ref_collections(p)
-      )
-    ).all_collections();
-    
-    // var ref_collections = parser.build_ref_collections(matrix, translations)
-    //   , base_collection = parser.build_base_collection(matrix, translations)
-    //   , all_collections = parser.link_refs(ref_collections).concat(parser.link_base(base_collection, ref_collections))
-    
-    collections.map(function(collection){
-      db_accessor.batch_insert(db, collection.collection, collection.docs, function(err, res){
-        console.log('Wrote' + res.length + 'documents to db.')
-      }, {})  
-    })
-  })
+    parser.build_collections(p).collections.map(function(c){
+      db_accessor.batch_insert(db, c.collection, c.docs, function(err, res){
+        if (err){ throw(err); }
+        else{ console.log('FINISHED: Wrote' + res.length + 'documents to' + c.length + 'collections.'); }
+      }, {});
+    });
+  });
 })();//self-invoke main function  
