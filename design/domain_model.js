@@ -234,7 +234,19 @@ var directorship = {
 }
 
 var legal_representation = {
+  company:
+  
+}
 
+var property_ownership = {
+  type: 'property'
+}
+
+var corporate_tie = {
+  type: 'legal' {legal, ownership, management}
+  verification_source: '',
+  verified?: false,
+  
 }
 
 var financial = {
