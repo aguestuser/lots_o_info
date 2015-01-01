@@ -17,7 +17,7 @@ module.exports = parser = {
     //input: spec : { source_path : Str, data_set : Str }
     //output: {Parser}
     var that = spec,
-        folder = that.test ? 'sample_data' : 'dock';
+        folder = that.test ? 'sample_data' : 'input_data';
     that.source_path = './io/'+folder+'/'+that.data_set+'/'+that.data_set+'.csv';
     that.translations = require('./' + that.data_set + '_translations');
     return that;
@@ -45,7 +45,7 @@ module.exports = parser = {
             return id_ify(to_doc(row, c.fields, i), p, i);
           })
         };
-      })) 
+      }))
     });
   }
 };
@@ -66,7 +66,7 @@ var to_matrix = function(data){
 // COLLECTION BUILDING FUNCTIONS
 
 var to_doc = function(row, fields, i){
-  //input: row : [Str], fields : {JSON} 
+  //input: row : [Str], fields : {JSON}
   //output: {JSON}
 
   var replace = function(node){ return node.hasOwnProperty('index'); },
@@ -84,7 +84,7 @@ var index_replacer = function(row){
 // COLLECTION LINKING FUNCTIONS
 
 var id_ify = function(doc, p, i){
-  var id = p.test ? i : mongo.ObjectID(); 
+  var id = p.test ? i : mongo.ObjectID();
   return _.extend(doc, { _id: id });
 };
 
@@ -125,22 +125,24 @@ var patch = function(node, replace, replacer){
   // input: node : 'a, row: Str
   // output: 'a
 
-  if (typeof node !== 'object'){                         // for flat nodees (Str, Date, Num...)
-    return node;                                         // return
+  if (typeof node !== 'object'){                      // for flat nodees (Str, Date, Num...)
+    return node;                                      // return
   }
-  else {                              
-    if (replace(node)){                                  // for obj matching replace predicate 
-      return replacer(node);                        // return
+  else {
+    if (replace(node)){                               // for obj matching replace predicate
+      return replacer(node);                          // return
     }
-    else if ( _.isArray(node) ){                         // for array
+    else if ( _.isArray(node) ){                      // for array
       return node.map(function(item){
-        return patch(item, replace, replacer);      // recur
-      });                                            
+        return patch(item, replace, replacer);        // recur
+      });
     }
-    else {                                               // for generic object
-      return _.object(_.map(node, function(val, key){
-        return[key, patch(val, replace, replacer)]; // recur        
-      }));
+    else {                                            // for generic object
+      return _.object(
+        _.map(node, function(val, key){
+          return[key, patch(val, replace, replacer)]; // recur
+        })
+      );
     }
   }
 };

@@ -1,12 +1,12 @@
 // should probably call this something besides parse.js
 // since it both parses and writes to the db
-// and since it's one level "higher" 
+// and since it's one level "higher"
 // than both parser.js and db_accessor.js
 
 // maybe import.js?
 
-var parser = require('parser')
-  , db_accessor = require('../db_accessor')
+var parser = require('modules/parser')
+  , db_accessor = require('modules/db_accessor')
   , creds = require('../credentials')
   , db_path = "mongodb://" + creds.mongolab.user + ":" + creds.mongolab.password + "@ds053190.mongolab.com:53190/lots_o_info_staging"
   , db = require('mongoskin').db(db_path)
@@ -25,4 +25,4 @@ var parser = require('parser')
       }, {});
     });
   });
-})();//self-invoke main function  
+})();//self-invoke main function
